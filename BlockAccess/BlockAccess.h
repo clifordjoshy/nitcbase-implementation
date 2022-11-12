@@ -10,18 +10,12 @@
 
 class BlockAccess {
  public:
-  static int search(int relId, Attribute *record, char *attrName, Attribute attrVal, int op);
-
+  static int search(int relId, Attribute *record, char attrName[ATTR_SIZE], Attribute attrVal, int op);
   static int insert(int relId, union Attribute *record);
-
-  static int renameRelation(char *oldName, char *newName);
-
-  static int renameAttribute(char *relName, char *oldName, char *newName);
-
+  static int renameRelation(char oldName[ATTR_SIZE], char newName[ATTR_SIZE]);
+  static int renameAttribute(char relName[ATTR_SIZE], char oldName[ATTR_SIZE], char newName[ATTR_SIZE]);
   static int deleteRelation(char *relName);
-
-  static RecId linearSearch(int relId, char *attrName, Attribute attrVal, int op);
-
+  static RecId linearSearch(int relId, char attrName[ATTR_SIZE], Attribute attrVal, int op);
   static int project(int relId, Attribute *record);
 };
 

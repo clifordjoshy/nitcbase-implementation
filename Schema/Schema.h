@@ -7,7 +7,7 @@
 
 class Schema {
  public:
-  static int createRel(char relName[], int numOfAttributes, char attrNames[][ATTR_SIZE], int attrType[]);
+  static int createRel(char relName[ATTR_SIZE], int numOfAttributes, char attrNames[][ATTR_SIZE], int attrType[]);
   static int deleteRel(char relName[ATTR_SIZE]);
   static int createIndex(char relName[ATTR_SIZE], char attrName[ATTR_SIZE]);
   static int dropIndex(char relName[ATTR_SIZE], char attrName[ATTR_SIZE]);
