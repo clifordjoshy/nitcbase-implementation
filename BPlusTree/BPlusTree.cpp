@@ -180,16 +180,17 @@ int BPlusTree::bPlusInsert(int relId, char attrName[ATTR_SIZE], Attribute attrVa
   HeadInfo rightBlkHeader;
   rightBlk->getHeader(&rightBlkHeader);
 
-  rightBlkHeader.numEntries = MAX_KEYS_LEAF / 2;
+  rightBlkHeader.numEntries = (MAX_KEYS_LEAF + 1) / 2;
   rightBlkHeader.rblock = leftBlkHeader.rblock;
   rightBlkHeader.pblock = leftBlkHeader.pblock;
+  rightBlkHeader.lblock = leftBlkNum;
   rightBlk->setHeader(&rightBlkHeader);
 
-  leftBlkHeader.numEntries = MAX_KEYS_LEAF / 2;
+  leftBlkHeader.numEntries = (MAX_KEYS_LEAF + 1) / 2;
   leftBlkHeader.rblock = rightBlkNum;
   leftBlk->setHeader(&leftBlkHeader);
 
-  for (int i = 0; i < MAX_KEYS_LEAF / 2; ++i) {
+  for (int i = 0; i < leftBlkHeader.numEntries; ++i) {
     leftBlk->setEntry(indices + i, i);
     rightBlk->setEntry(indices + MIDDLE_INDEX_LEAF + i + 1, i);
   }
@@ -222,6 +223,7 @@ int BPlusTree::bPlusInsert(int relId, char attrName[ATTR_SIZE], Attribute attrVa
       if (arrayPos == recordPos && compareAttrs(internalEntry.attrVal, newAttrVal, attrCatEntry.attrType) > 0) {
         internalEntries[arrayPos] = {leftBlkNum, newAttrVal, rightBlkNum};
         ++arrayPos;
+        internalEntry.lChild = rightBlkNum;
       }
       internalEntries[arrayPos] = internalEntry;
       ++arrayPos;
@@ -281,15 +283,19 @@ int BPlusTree::bPlusInsert(int relId, char attrName[ATTR_SIZE], Attribute attrVa
     rightBlkHeader.numEntries = MAX_KEYS_INTERNAL / 2;
     rightBlk->setHeader(&rightBlkHeader);
 
+    // middle child is going to the parent.
     for (int i = 0; i < MAX_KEYS_INTERNAL / 2; ++i) {
-      leftBlk->setEntry(indices + i, i);
-      rightBlk->setEntry(indices + MIDDLE_INDEX_INTERNAL + i + 1, i);
+      // from 0 .. MAX_KEYS/2-1
+      leftBlk->setEntry(internalEntries + i, i);
+
+      // from MAX_KEYS/2 .. MAX_KEYS
+      rightBlk->setEntry(internalEntries + MIDDLE_INDEX_INTERNAL + i + 1, i);
     }
 
     /*store the block type of a child of any entry .*/
     int type = StaticBuffer::getStaticBlockType(internalEntries[0].rChild);
 
-    // iterate from 50 to 100. (50th child's right child is 51st child's lblock)
+    // iterate from 50 to 100. (index 50 rchild is index 51 lchild, so no need to handle that separately)
     for (int i = MAX_KEYS_INTERNAL / 2; i < MAX_KEYS_INTERNAL + 1; ++i) {
       IndBuffer* childBuff;
       // assign the rchild block of ith index in internalEntries of the appropriate type to childBuff.

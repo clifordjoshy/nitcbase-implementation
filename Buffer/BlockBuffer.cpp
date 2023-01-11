@@ -409,10 +409,12 @@ int IndInternal::getEntry(void *ptr, int indexNum) {
   if (indexNum < 0 || indexNum > MAX_KEYS_INTERNAL) {
     return E_OUTOFBOUND;
   }
-
   // copy the indexNum'th Internalentry in block to memory ptr(ptr can be type casted appropriately if needed).
-  unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * INTERNAL_ENTRY_SIZE);
-  memcpy((struct InternalEntry *)ptr, entryPtr, INTERNAL_ENTRY_SIZE);
+  unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * 20);
+  struct InternalEntry *internalEntry = (struct InternalEntry *)ptr;
+  memcpy(internalEntry, entryPtr, 4);
+  memcpy(&(internalEntry->attrVal), entryPtr + 4, ATTR_SIZE);
+  memcpy(&(internalEntry->rChild), entryPtr + 20, 4);
 
   return SUCCESS;
 }
@@ -434,8 +436,11 @@ int IndInternal::setEntry(void *ptr, int indexNum) {
   }
 
   // copy the struct InternalEntry pointed by ptr to indexNum'th entry in block.
-  unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * INTERNAL_ENTRY_SIZE);
-  memcpy(entryPtr, (struct InternalEntry *)ptr, INTERNAL_ENTRY_SIZE);
+  unsigned char *entryPtr = bufferPtr + HEADER_SIZE + (indexNum * 20);
+  struct InternalEntry *internalEntry = (struct InternalEntry *)ptr;
+  memcpy(entryPtr, &(internalEntry->lChild), 4);
+  memcpy(entryPtr + 4, &(internalEntry->attrVal), ATTR_SIZE);
+  memcpy(entryPtr + 20, &(internalEntry->rChild), 4);
 
   // update dirty bit.
   // if setDirtyBit failed, return the value returned by the call
