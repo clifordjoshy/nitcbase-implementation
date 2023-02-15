@@ -8,7 +8,7 @@ OpenRelTable::OpenRelTable() {
   // initialize tableMetaInfo of all the entries of the Open Relation Table with free as true and relName as an empty string.
   for (int i = 0; i < MAX_OPEN; ++i) {
     tableMetaInfo[i].free = true;
-    tableMetaInfo[i].rel_name[0] = '\0';
+    tableMetaInfo[i].relName[0] = '\0';
     AttrCacheTable::attrCache[i] = nullptr;
   }
 
@@ -47,7 +47,7 @@ OpenRelTable::OpenRelTable() {
 
   /**** setting up Relation Catalog relation in the Open Relation Table ****/
   OpenRelTable::tableMetaInfo[RELCAT_RELID].free = false;
-  strcpy(OpenRelTable::tableMetaInfo[RELCAT_RELID].rel_name, RELCAT_RELNAME);
+  strcpy(OpenRelTable::tableMetaInfo[RELCAT_RELID].relName, RELCAT_RELNAME);
 
   /************ Setting up Attribute Catalog relation in the cache ************/
 
@@ -79,7 +79,7 @@ OpenRelTable::OpenRelTable() {
 
   /**** setting up Attribute Catalog relation in the Open Relation Table ****/
   OpenRelTable::tableMetaInfo[ATTRCAT_RELID].free = false;
-  strcpy(OpenRelTable::tableMetaInfo[ATTRCAT_RELID].rel_name, ATTRCAT_RELNAME);
+  strcpy(OpenRelTable::tableMetaInfo[ATTRCAT_RELID].relName, ATTRCAT_RELNAME);
 }
 
 OpenRelTable::~OpenRelTable() {
@@ -147,7 +147,7 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
 
   // if found return the relation id, else indicate that the relation do not have an entry in the Open Relation Table.
   for (int i = 0; i < MAX_OPEN; ++i) {
-    if (!OpenRelTable::tableMetaInfo[i].free && strcmp(OpenRelTable::tableMetaInfo[i].rel_name, relName) == 0) {
+    if (!OpenRelTable::tableMetaInfo[i].free && strcmp(OpenRelTable::tableMetaInfo[i].relName, relName) == 0) {
       return i;
     }
   }
@@ -241,7 +241,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
   /****** Setting up metadata in the Open Relation Table for the relation******/
 
   tableMetaInfo[relId].free = false;
-  strcpy(tableMetaInfo[relId].rel_name, relName);
+  strcpy(tableMetaInfo[relId].relName, relName);
 
   return relId;
 }
