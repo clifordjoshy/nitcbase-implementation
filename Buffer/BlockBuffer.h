@@ -45,7 +45,7 @@ class BlockBuffer {
   int blockNum;
   // methods
   int loadBlockAndGetBufferPtr(unsigned char **buffPtr);
-  int getFreeBlock(int BlockType);
+  int getFreeBlock(int blockType);
 
  public:
   // methods
@@ -80,7 +80,7 @@ class IndBuffer : public BlockBuffer {
 
 class IndInternal : public IndBuffer {
  public:
-  IndInternal();  // update in documentation
+  IndInternal();
   IndInternal(int blockNum);
   int getEntry(void *ptr, int indexNum);
   int setEntry(void *ptr, int indexNum);

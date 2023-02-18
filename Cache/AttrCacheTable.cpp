@@ -160,27 +160,20 @@ int AttrCacheTable::resetSearchIndex(int relId, int attrOffset) {
   return setSearchIndex(relId, attrOffset, &resetIndex);
 }
 
-void AttrCacheTable::recordToAttrCacheEntry(union Attribute record[ATTRCAT_NO_ATTRS], AttrCacheEntry* attrCacheEntry) {
-  strcpy(attrCacheEntry->attrCatEntry.relName, record[ATTRCAT_REL_NAME_INDEX].sVal);
-  strcpy(attrCacheEntry->attrCatEntry.attrName, record[ATTRCAT_ATTR_NAME_INDEX].sVal);
-  attrCacheEntry->attrCatEntry.attrType = (int)record[ATTRCAT_ATTR_TYPE_INDEX].nVal;
-  attrCacheEntry->attrCatEntry.primaryFlag = (int)record[ATTRCAT_PRIMARY_FLAG_INDEX].nVal;
-  attrCacheEntry->attrCatEntry.rootBlock = (int)record[ATTRCAT_ROOT_BLOCK_INDEX].nVal;
-  attrCacheEntry->attrCatEntry.offset = (int)record[ATTRCAT_OFFSET_INDEX].nVal;
-
-  // The dirty, recId, searchIndex, and next fields are initialized with default values of:
-  // false, {-1, -1}, {-1, -1}, and NULL, respectively.
-  attrCacheEntry->dirty = false;
-  attrCacheEntry->recId = {-1, -1};
-  attrCacheEntry->searchIndex = {-1, -1};
-  attrCacheEntry->next = nullptr;
+void AttrCacheTable::recordToAttrCatEntry(union Attribute record[ATTRCAT_NO_ATTRS], AttrCatEntry* attrCatEntry) {
+  strcpy(attrCatEntry->relName, record[ATTRCAT_REL_NAME_INDEX].sVal);
+  strcpy(attrCatEntry->attrName, record[ATTRCAT_ATTR_NAME_INDEX].sVal);
+  attrCatEntry->attrType = (int)record[ATTRCAT_ATTR_TYPE_INDEX].nVal;
+  attrCatEntry->primaryFlag = (int)record[ATTRCAT_PRIMARY_FLAG_INDEX].nVal;
+  attrCatEntry->rootBlock = (int)record[ATTRCAT_ROOT_BLOCK_INDEX].nVal;
+  attrCatEntry->offset = (int)record[ATTRCAT_OFFSET_INDEX].nVal;
 }
 
-void AttrCacheTable::attrCacheEntryToRecord(union Attribute record[ATTRCAT_NO_ATTRS], AttrCacheEntry* attrCacheEntry) {
-  strcpy(record[ATTRCAT_REL_NAME_INDEX].sVal, attrCacheEntry->attrCatEntry.relName);
-  strcpy(record[ATTRCAT_ATTR_NAME_INDEX].sVal, attrCacheEntry->attrCatEntry.attrName);
-  record[ATTRCAT_ATTR_TYPE_INDEX].nVal = attrCacheEntry->attrCatEntry.attrType;
-  record[ATTRCAT_PRIMARY_FLAG_INDEX].nVal = attrCacheEntry->attrCatEntry.primaryFlag;
-  record[ATTRCAT_ROOT_BLOCK_INDEX].nVal = attrCacheEntry->attrCatEntry.rootBlock;
-  record[ATTRCAT_OFFSET_INDEX].nVal = attrCacheEntry->attrCatEntry.offset;
+void AttrCacheTable::attrCatEntryToRecord(AttrCatEntry* attrCatEntry, union Attribute record[ATTRCAT_NO_ATTRS]) {
+  strcpy(record[ATTRCAT_REL_NAME_INDEX].sVal, attrCatEntry->relName);
+  strcpy(record[ATTRCAT_ATTR_NAME_INDEX].sVal, attrCatEntry->attrName);
+  record[ATTRCAT_ATTR_TYPE_INDEX].nVal = attrCatEntry->attrType;
+  record[ATTRCAT_PRIMARY_FLAG_INDEX].nVal = attrCatEntry->primaryFlag;
+  record[ATTRCAT_ROOT_BLOCK_INDEX].nVal = attrCatEntry->rootBlock;
+  record[ATTRCAT_OFFSET_INDEX].nVal = attrCatEntry->offset;
 }

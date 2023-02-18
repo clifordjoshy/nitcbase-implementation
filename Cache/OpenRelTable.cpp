@@ -21,7 +21,7 @@ OpenRelTable::OpenRelTable() {
   relCatBlock.getRecord(relCatRecInRelCat, RELCAT_SLOTNUM_FOR_RELCAT);
 
   struct RelCacheEntry relCacheEntry;
-  RelCacheTable::recordToRelCacheEntry(relCatRecInRelCat, &relCacheEntry);
+  RelCacheTable::recordToRelCatEntry(relCatRecInRelCat, &relCacheEntry.relCatEntry);
   relCacheEntry.recId.block = RELCAT_BLOCK;
   relCacheEntry.recId.slot = RELCAT_SLOTNUM_FOR_RELCAT;
 
@@ -36,7 +36,7 @@ OpenRelTable::OpenRelTable() {
     Attribute relCatRecInAttrCat[ATTRCAT_NO_ATTRS];
     attrCatBlock.getRecord(relCatRecInAttrCat, i);
     struct AttrCacheEntry* attrCacheEntry = relCatAttrCache + i;
-    AttrCacheTable::recordToAttrCacheEntry(relCatRecInAttrCat, attrCacheEntry);
+    AttrCacheTable::recordToAttrCatEntry(relCatRecInAttrCat, &attrCacheEntry->attrCatEntry);
     attrCacheEntry->recId.block = ATTRCAT_BLOCK;
     attrCacheEntry->recId.slot = i;
     attrCacheEntry->next = relCatAttrCache + i + 1;
@@ -55,7 +55,7 @@ OpenRelTable::OpenRelTable() {
   union Attribute attrCatRecInRelCat[RELCAT_NO_ATTRS];
   relCatBlock.getRecord(attrCatRecInRelCat, RELCAT_SLOTNUM_FOR_ATTRCAT);
 
-  RelCacheTable::recordToRelCacheEntry(attrCatRecInRelCat, &relCacheEntry);
+  RelCacheTable::recordToRelCatEntry(attrCatRecInRelCat, &relCacheEntry.relCatEntry);
   relCacheEntry.recId.block = RELCAT_BLOCK;
   relCacheEntry.recId.slot = RELCAT_SLOTNUM_FOR_ATTRCAT;
 
@@ -68,7 +68,7 @@ OpenRelTable::OpenRelTable() {
     Attribute attrCatRecInAttrCat[ATTRCAT_NO_ATTRS];
     attrCatBlock.getRecord(attrCatRecInAttrCat, RELCAT_NO_ATTRS + i);
     struct AttrCacheEntry* attrCacheEntry = attrCatAttrCache + i;
-    AttrCacheTable::recordToAttrCacheEntry(attrCatRecInAttrCat, attrCacheEntry);
+    AttrCacheTable::recordToAttrCatEntry(attrCatRecInAttrCat, &attrCacheEntry->attrCatEntry);
     attrCacheEntry->recId.block = ATTRCAT_BLOCK;
     attrCacheEntry->recId.slot = RELCAT_NO_ATTRS + i;
     attrCacheEntry->next = attrCatAttrCache + i + 1;
@@ -95,7 +95,7 @@ OpenRelTable::~OpenRelTable() {
   /****** releasing the entry corresponding to Attribute Catalog relation from Relation Cache Table ******/
   if (AttrCacheTable::attrCache[ATTRCAT_RELID]->dirty) {
     Attribute attrCatRecInRelCache[RELCAT_NO_ATTRS];
-    RelCacheTable::relCacheEntryToRecord(attrCatRecInRelCache, RelCacheTable::relCache[ATTRCAT_RELID]);
+    RelCacheTable::relCatEntryToRecord(&RelCacheTable::relCache[ATTRCAT_RELID]->relCatEntry, attrCatRecInRelCache);
 
     RecBuffer(RELCAT_BLOCK).setRecord(attrCatRecInRelCache, RELCAT_SLOTNUM_FOR_ATTRCAT);
   }
@@ -106,7 +106,7 @@ OpenRelTable::~OpenRelTable() {
   for (AttrCacheEntry* entry = AttrCacheTable::attrCache[ATTRCAT_RELID]; entry != nullptr; entry = entry->next) {
     if (entry->dirty) {
       Attribute attrCatRecInAttrCache[ATTRCAT_NO_ATTRS];
-      AttrCacheTable::attrCacheEntryToRecord(attrCatRecInAttrCache, entry);
+      AttrCacheTable::attrCatEntryToRecord(&entry->attrCatEntry, attrCatRecInAttrCache);
       attrCatBlock.setRecord(attrCatRecInAttrCache, entry->recId.slot);
     }
   }
@@ -122,7 +122,7 @@ OpenRelTable::~OpenRelTable() {
   /****** releasing the entry corresponding to Relation Catalog relation from Relation Cache Table ******/
   if (AttrCacheTable::attrCache[RELCAT_RELID]->dirty) {
     Attribute relCatRecInRelCache[RELCAT_NO_ATTRS];
-    RelCacheTable::relCacheEntryToRecord(relCatRecInRelCache, RelCacheTable::relCache[RELCAT_RELID]);
+    RelCacheTable::relCatEntryToRecord(&RelCacheTable::relCache[RELCAT_RELID]->relCatEntry, relCatRecInRelCache);
 
     RecBuffer(RELCAT_BLOCK).setRecord(relCatRecInRelCache, RELCAT_SLOTNUM_FOR_RELCAT);
   }
@@ -131,7 +131,7 @@ OpenRelTable::~OpenRelTable() {
   for (AttrCacheEntry* entry = AttrCacheTable::attrCache[RELCAT_RELID]; entry != nullptr; entry = entry->next) {
     if (entry->dirty) {
       Attribute relCatRecInAttrCache[ATTRCAT_NO_ATTRS];
-      AttrCacheTable::attrCacheEntryToRecord(relCatRecInAttrCache, entry);
+      AttrCacheTable::attrCatEntryToRecord(&entry->attrCatEntry, relCatRecInAttrCache);
       attrCatBlock.setRecord(relCatRecInAttrCache, entry->recId.slot);
     }
   }
@@ -187,7 +187,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
   }
 
   /* read the record entry corresponding to relcatRecId and create a Relation Cache entry on it
-     using RecBuffer::getRecord() and RelCacheTable::recordToRelCacheEntry().
+     using RecBuffer::getRecord() and RelCacheTable::recordToRelCatEntry().
      update the recId field of this Relation Cache entry to relcatRecId.
      use the Relation Cache entry to set the relIdth entry of the RelCacheTable.*/
 
@@ -195,7 +195,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
   union Attribute relCatRecForRel[RELCAT_NO_ATTRS];
   relCatBlock.getRecord(relCatRecForRel, relCatRecId.slot);
   struct RelCacheEntry* relCacheEntryForRel = (RelCacheEntry*)malloc(sizeof(RelCacheEntry));
-  RelCacheTable::recordToRelCacheEntry(relCatRecForRel, relCacheEntryForRel);
+  RelCacheTable::recordToRelCatEntry(relCatRecForRel, &relCacheEntryForRel->relCatEntry);
   relCacheEntryForRel->recId = relCatRecId;
 
   RelCacheTable::relCache[relId] = relCacheEntryForRel;
@@ -210,7 +210,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
                 let attrcatRecId store a valid record id an entry of the relation, relName,
          in the Attribute Catalog.
         read the record entry corresponding to attrcatRecId and create an Attribute Cache entry on it
-         using RecBuffer::getRecord() and AttrCacheTable::recordToAttrCacheEntry().
+         using RecBuffer::getRecord() and AttrCacheTable::recordToAttrCatEntry().
          update the recId field of this Attribute Cache entry to attrcatRecId.
          add the Attribute Cache entry to the linked list of listHead .
   }*/
@@ -231,7 +231,7 @@ int OpenRelTable::openRel(char relName[ATTR_SIZE]) {
     union Attribute attrCatRecForRelAttr[ATTRCAT_NO_ATTRS];
     RecBuffer(attrRecId.block).getRecord(attrCatRecForRelAttr, attrRecId.slot);
     AttrCacheEntry* entry = attrCacheEntryForRel + i;
-    AttrCacheTable::recordToAttrCacheEntry(attrCatRecForRelAttr, entry);
+    AttrCacheTable::recordToAttrCatEntry(attrCatRecForRelAttr, &entry->attrCatEntry);
     entry->next = entry + 1;
     entry->recId = attrRecId;
   }
@@ -262,7 +262,7 @@ int OpenRelTable::closeRel(int relId) {
   if (RelCacheTable::relCache[relId]->dirty) {
     union Attribute relCatEntryForRel[RELCAT_NO_ATTRS];
     RelCacheEntry* entry = RelCacheTable::relCache[relId];
-    RelCacheTable::relCacheEntryToRecord(relCatEntryForRel, entry);
+    RelCacheTable::relCatEntryToRecord(&entry->relCatEntry, relCatEntryForRel);
     RecBuffer(RELCAT_BLOCK).setRecord(relCatEntryForRel, entry->recId.slot);
   }
 
@@ -274,7 +274,7 @@ int OpenRelTable::closeRel(int relId) {
   for (AttrCacheEntry* entry = AttrCacheTable::attrCache[relId]; entry != nullptr; entry = entry->next) {
     if (entry->dirty) {
       union Attribute attrCatEntryForRel[ATTRCAT_NO_ATTRS];
-      AttrCacheTable::attrCacheEntryToRecord(attrCatEntryForRel, entry);
+      AttrCacheTable::attrCatEntryToRecord(&entry->attrCatEntry, attrCatEntryForRel);
 
       // use the slot from recid since attr catalog is in multiple blocks
       RecBuffer(entry->recId.block).setRecord(attrCatEntryForRel, entry->recId.slot);

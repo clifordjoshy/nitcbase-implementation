@@ -70,24 +70,20 @@ int RelCacheTable::resetSearchIndex(int relId) {
   return setSearchIndex(relId, &resetIndex);
 }
 
-void RelCacheTable::recordToRelCacheEntry(union Attribute record[RELCAT_NO_ATTRS], RelCacheEntry* relCacheEntry) {
-  relCacheEntry->dirty = false;
-  relCacheEntry->searchIndex = {-1, -1};
-  relCacheEntry->recId = {-1, -1};
-
-  strcpy(relCacheEntry->relCatEntry.relName, record[RELCAT_REL_NAME_INDEX].sVal);
-  relCacheEntry->relCatEntry.numAttrs = (int)record[RELCAT_NO_ATTRIBUTES_INDEX].nVal;
-  relCacheEntry->relCatEntry.numRecs = (int)record[RELCAT_NO_RECORDS_INDEX].nVal;
-  relCacheEntry->relCatEntry.firstBlk = (int)record[RELCAT_FIRST_BLOCK_INDEX].nVal;
-  relCacheEntry->relCatEntry.lastBlk = (int)record[RELCAT_LAST_BLOCK_INDEX].nVal;
-  relCacheEntry->relCatEntry.numSlotsPerBlk = (int)record[RELCAT_NO_SLOTS_PER_BLOCK_INDEX].nVal;
+void RelCacheTable::recordToRelCatEntry(union Attribute record[RELCAT_NO_ATTRS], RelCatEntry* relCatEntry) {
+  strcpy(relCatEntry->relName, record[RELCAT_REL_NAME_INDEX].sVal);
+  relCatEntry->numAttrs = (int)record[RELCAT_NO_ATTRIBUTES_INDEX].nVal;
+  relCatEntry->numRecs = (int)record[RELCAT_NO_RECORDS_INDEX].nVal;
+  relCatEntry->firstBlk = (int)record[RELCAT_FIRST_BLOCK_INDEX].nVal;
+  relCatEntry->lastBlk = (int)record[RELCAT_LAST_BLOCK_INDEX].nVal;
+  relCatEntry->numSlotsPerBlk = (int)record[RELCAT_NO_SLOTS_PER_BLOCK_INDEX].nVal;
 }
 
-void RelCacheTable::relCacheEntryToRecord(union Attribute record[RELCAT_NO_ATTRS], RelCacheEntry* relCacheEntry) {
-  strcpy(record[RELCAT_REL_NAME_INDEX].sVal, relCacheEntry->relCatEntry.relName);
-  record[RELCAT_NO_ATTRIBUTES_INDEX].nVal = relCacheEntry->relCatEntry.numAttrs;
-  record[RELCAT_NO_RECORDS_INDEX].nVal = relCacheEntry->relCatEntry.numRecs;
-  record[RELCAT_FIRST_BLOCK_INDEX].nVal = relCacheEntry->relCatEntry.firstBlk;
-  record[RELCAT_LAST_BLOCK_INDEX].nVal = relCacheEntry->relCatEntry.lastBlk;
-  record[RELCAT_NO_SLOTS_PER_BLOCK_INDEX].nVal = relCacheEntry->relCatEntry.numSlotsPerBlk;
+void RelCacheTable::relCatEntryToRecord(RelCatEntry* relCatEntry, union Attribute record[RELCAT_NO_ATTRS]) {
+  strcpy(record[RELCAT_REL_NAME_INDEX].sVal, relCatEntry->relName);
+  record[RELCAT_NO_ATTRIBUTES_INDEX].nVal = relCatEntry->numAttrs;
+  record[RELCAT_NO_RECORDS_INDEX].nVal = relCatEntry->numRecs;
+  record[RELCAT_FIRST_BLOCK_INDEX].nVal = relCatEntry->firstBlk;
+  record[RELCAT_LAST_BLOCK_INDEX].nVal = relCatEntry->lastBlk;
+  record[RELCAT_NO_SLOTS_PER_BLOCK_INDEX].nVal = relCatEntry->numSlotsPerBlk;
 }
