@@ -118,7 +118,11 @@ int Schema::renameAttr(char relName[ATTR_SIZE], char oldAttrName[ATTR_SIZE], cha
 }
 
 int Schema::openRel(char relName[ATTR_SIZE]) {
-  return OpenRelTable::openRel(relName);
+  int relId = OpenRelTable::openRel(relName);
+  if (relId >= 0) {
+    return SUCCESS;
+  }
+  return relId;
 }
 
 int Schema::closeRel(char relName[ATTR_SIZE]) {
