@@ -41,21 +41,6 @@ int BlockBuffer::getBlockNum() {
   return this->blockNum;
 }
 
-int BlockBuffer::getBlockType() {
-  unsigned char *bufferPtr;
-  // get the starting address of the buffer containing the block using loadBlockAndGetBufferPtr(&bufferPtr).
-  int ret = loadBlockAndGetBufferPtr(&bufferPtr);
-
-  // if the call to loadBlockAndGetBufferPtr(&bufferPtr) return SUCCESS
-  if (ret == SUCCESS) {
-    // return the first 4 bytes of the buffer that stores the block type. (Hint: cast using int32_t)
-    return (int32_t)(*bufferPtr);
-  } else {
-    // else load failed due to E_OUTOFBOUND, invalid block number, return the value returned by the call.
-    return ret;
-  }
-}
-
 int BlockBuffer::setBlockType(int blockType) {
   unsigned char *bufferPtr;
   // get the starting address of the buffer containing the block using loadBlockAndGetBufferPtr(&bufferPtr).
