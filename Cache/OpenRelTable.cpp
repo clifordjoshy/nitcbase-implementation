@@ -93,7 +93,7 @@ OpenRelTable::~OpenRelTable() {
   /************ Closing Attribute Catalog relation in the cache ************/
 
   /****** releasing the entry corresponding to Attribute Catalog relation from Relation Cache Table ******/
-  if (AttrCacheTable::attrCache[ATTRCAT_RELID]->dirty) {
+  if (RelCacheTable::relCache[ATTRCAT_RELID]->dirty) {
     Attribute attrCatRecInRelCache[RELCAT_NO_ATTRS];
     RelCacheTable::relCatEntryToRecord(&RelCacheTable::relCache[ATTRCAT_RELID]->relCatEntry, attrCatRecInRelCache);
 

@@ -137,6 +137,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr
   // Before calling the search function, reset the search to start from the first hit
   Attribute record[nAttrs];
   RelCacheTable::resetSearchIndex(srcRelId);
+  AttrCacheTable::resetSearchIndex(srcRelId, attr);
 
   while (true) {
     // For doing projection call search of Block Access layer with the following arguments:
@@ -384,6 +385,9 @@ int Algebra::join(char srcRelation1[ATTR_SIZE], char srcRelation2[ATTR_SIZE], ch
   while (BlockAccess::project(srcRelId1, record1) == SUCCESS) {
     // this loop is to get every record of the srcRelation2 which satisfies the following condition:
     // record1.attribute1 = record2.attribute2 (i.e. Equi-Join condition)
+
+    RelCacheTable::resetSearchIndex(srcRelId2);
+    AttrCacheTable::resetSearchIndex(srcRelId2, attribute2);
 
     while (BlockAccess::search(srcRelId2, record2, attribute2, record1[attrCatEntry1.offset], EQ) == SUCCESS) {
       // copy srcRelation1's and srcRelation2's attribute values(except for attribute2 in rel2) from
