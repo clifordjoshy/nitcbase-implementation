@@ -168,33 +168,13 @@ int Schema::dropIndex(char relName[ATTR_SIZE], char attrName[ATTR_SIZE]) {
   }
 
   // find the root block of the bplus tree
-
-  Attribute relNameAttr;
-  strcpy(relNameAttr.sVal, relName);
-
-  int rootBlock;
-
-  RelCacheTable::resetSearchIndex(ATTRCAT_RELID);
-
-  RecId attrCatRecId;
-  Attribute attrCatEntryRecord[ATTRCAT_NO_ATTRS];
-  char attrCatAttrRelname[] = ATTRCAT_ATTR_RELNAME;
-  while (true) {
-    // search for all the attributes corresponding to the relation with relName in attribute catalog
-    attrCatRecId = BlockAccess::linearSearch(ATTRCAT_RELID, attrCatAttrRelname, relNameAttr, EQ);
-
-    if (attrCatRecId.block == -1 || attrCatRecId.slot == -1) {
-      return E_ATTRNOTEXIST;
-    }
-
-    RecBuffer attrCatRecBuf(attrCatRecId.block);
-    attrCatRecBuf.getRecord(attrCatEntryRecord, attrCatRecId.slot);
-
-    if (strcmp(attrName, attrCatEntryRecord[ATTRCAT_ATTR_NAME_INDEX].sVal) == 0) {
-      rootBlock = (int)attrCatEntryRecord[ATTRCAT_ROOT_BLOCK_INDEX].nVal;
-      break;
-    }
+  AttrCatEntry attrCatEntry;
+  int ret = AttrCacheTable::getAttrCatEntry(relId, attrName, &attrCatEntry);
+  if (ret != SUCCESS) {
+    return ret;
   }
+
+  int rootBlock = attrCatEntry.rootBlock;
 
   if (rootBlock == -1) {
     return E_NOINDEX;
@@ -202,8 +182,8 @@ int Schema::dropIndex(char relName[ATTR_SIZE], char attrName[ATTR_SIZE]) {
 
   BPlusTree::bPlusDestroy(rootBlock);
 
-  attrCatEntryRecord[ATTRCAT_ROOT_BLOCK_INDEX].nVal = -1;
-  RecBuffer(attrCatRecId.block).setRecord(attrCatEntryRecord, attrCatRecId.slot);
+  attrCatEntry.rootBlock = -1;
+  AttrCacheTable::setAttrCatEntry(relId, attrName, &attrCatEntry);
 
   return SUCCESS;
 }
